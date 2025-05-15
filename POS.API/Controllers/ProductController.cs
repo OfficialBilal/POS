@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using POS.Application.Repositories;
-using POS.Application.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
 using POS.Domain.Entities;
+using POS.Application.Commands;
+using POS.Application.Queries;
 
 namespace POS.API.Controllers
 {
@@ -10,57 +10,28 @@ namespace POS.API.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly ProductService _productService;
+        private readonly IMediator _mediator;
 
-        public ProductController(ProductService productService)
+        public ProductController(IMediator mediator)
         {
-            _productService = productService;
+            _mediator = mediator;
         }
 
         [HttpPost]
-        public async Task AddProduct(Product product)
+        public async Task<IActionResult> CreateProduct(CreateProduct.Request command)
         {
-            await _productService.AddProduct(product);
-            Ok(product);
-        }
-
-        [HttpDelete]
-        public async Task DeleteProduct(int id)
-        {
-            await _productService.DeleteProduct(id);
-            NoContent();
-           
-        }
-
-        [HttpGet]
-        public async Task<IEnumerable<Product>> GetAllProducts()
-        {
-            var product = await _productService.GetAllProducts();
-            return product;
+            var productId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetProductById), new { id = productId }, productId);
         }
 
         [HttpGet("{id}")]
-        public async Task<Product> GetProductById(int id)
+        public async Task<ActionResult<Product>> GetProductById(int id)
         {
-            var product =  await _productService.GetProductById(id);
+            var product = await _mediator.Send(new GetProductById.Request() { Id = id});
             if (product == null)
-            {
-                NotFound();
-            }
+                return NotFound();
 
-            return product;
-
-        }
-
-        [HttpPut("{id}")]
-        public async Task UpdateProduct(Product product, int id)
-        {
-            if (id != product.Id)
-                BadRequest();
-
-            await _productService.UpdateProduct(product, id);
-            NoContent();
-
+            return Ok(product);
         }
     }
 }

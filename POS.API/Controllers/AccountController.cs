@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using POS.Application.Repositories;
-using POS.Application.Services;
+using POS.Application.Commands;
+using POS.Application.Queries;
 using POS.Domain.Entities;
 
 namespace POS.API.Controllers
@@ -10,32 +10,26 @@ namespace POS.API.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly AccountService _accountService;
+        private readonly IMediator _mediator;
 
-        public AccountController(AccountService accountService)
+        public AccountController(IMediator mediator)
         {
-            _accountService = accountService;
+            _mediator = mediator;
         }
 
-
-        [HttpPost("{register}")]
-        public async Task<IActionResult> Register(Account account)
+        [HttpPost]
+        public async Task<IActionResult> CreateAccount(CreateAccountCommand command)
         {
-            await _accountService.AddAccount(account);
-            return Ok( new { meassage = "Account Created Successfully"} );
+            var accountId = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetAccountByUsername), new { username = command.Username }, accountId);
         }
 
         [HttpGet("{username}")]
         public async Task<ActionResult<Account>> GetAccountByUsername(string username)
         {
-           var account = await _accountService.GetAccountByUsername(username);
-            if(account == null)
-            {
-                NotFound();
-            }
+            var account = await _mediator.Send(new GetAccountByUsernameQuery(username));
+            if (account == null) return NotFound();
             return Ok(account);
         }
-
-
     }
 }
