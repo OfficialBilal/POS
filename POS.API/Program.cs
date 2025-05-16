@@ -1,9 +1,10 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using POS.Application.Repositories;
 using POS.Infrastructure.Data;
-using POS.Infrastructure.Repositories;
 using POS.Infrastructure.Handlers;
+using POS.Infrastructure.Repositories;
 
 namespace POS.API
 {
@@ -18,7 +19,26 @@ namespace POS.API
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "POS API",
+                    Version = "v1",
+                    Description = "API documentation for POS system"
+                });
+
+                // Resolve schemaId conflicts by using the full name with namespaces
+                options.CustomSchemaIds(type =>
+                {
+                    if (type.DeclaringType != null)
+                    {
+                        return $"{type.DeclaringType.Name}.{type.Name}";
+                    }
+                    return type.Name;
+                });
+            });
+
 
             builder.Services.AddDbContext<PosDBContext>((serviceProvider, dbContextOptionsBuilder) =>
             {
@@ -47,6 +67,7 @@ namespace POS.API
 
             builder.Services.AddMediatR(typeof(CreateAccountHandler).Assembly);
             builder.Services.AddMediatR(typeof(GetAccountByUsernameHandler).Assembly);
+
 
 
 

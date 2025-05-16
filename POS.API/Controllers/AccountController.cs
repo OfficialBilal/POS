@@ -18,7 +18,7 @@ namespace POS.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAccount(CreateAccountCommand command)
+        public async Task<IActionResult> CreateAccount(CreateAccount.Request command)
         {
             var accountId = await _mediator.Send(command);
             return CreatedAtAction(nameof(GetAccountByUsername), new { username = command.Username }, accountId);
@@ -27,7 +27,7 @@ namespace POS.API.Controllers
         [HttpGet("{username}")]
         public async Task<ActionResult<Account>> GetAccountByUsername(string username)
         {
-            var account = await _mediator.Send(new GetAccountByUsernameQuery(username));
+            var account = await _mediator.Send(new GetAccountByUsername.Request() { Username = username});
             if (account == null) return NotFound();
             return Ok(account);
         }

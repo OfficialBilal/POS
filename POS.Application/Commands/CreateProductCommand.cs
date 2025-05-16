@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace POS.Application.Commands
 {
-    public class CreateProduct : IRequest<int>
+    public class CreateProduct
     {
         public class Request : IRequest<Response>
         {
