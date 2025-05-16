@@ -1,25 +1,23 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using POS.Application.Queries;
+using POS.Application.Repositories;
 using POS.Domain.Entities;
-using POS.Infrastructure.Data;
 using ProductEntity = POS.Domain.Entities.Product;
 
 namespace POS.Infrastructure.Handlers
 {
     public class GetProductByIdHandler : IRequestHandler<GetProductById.Request, GetProductById.Response>
     {
-        private readonly PosDBContext _context;
+        private readonly IProductRepository _repository;
 
-        public GetProductByIdHandler(PosDBContext context)
+        public GetProductByIdHandler(IProductRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<GetProductById.Response> Handle(GetProductById.Request request, CancellationToken cancellationToken)
         {
-            var product = await _context.Products
-                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+            var product = await _repository.GetProductById(request.Id);
             return new()
             {
                 Name = product?.Name ?? string.Empty,

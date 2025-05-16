@@ -1,17 +1,19 @@
 ﻿using MediatR;
 using POS.Domain.Entities;
-using POS.Infrastructure.Data;
 using POS.Application.Commands;
+using POS.Application.Repositories;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace POS.Infrastructure.Handlers
 {
     public class CreateProductHandler : IRequestHandler<CreateProduct.Request, CreateProduct.Response>
     {
-        private readonly PosDBContext _context;
+        private readonly IProductRepository _repository;
 
-        public CreateProductHandler(PosDBContext context)
+        public CreateProductHandler(IProductRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<CreateProduct.Response> Handle(CreateProduct.Request request, CancellationToken cancellationToken)
@@ -23,12 +25,11 @@ namespace POS.Infrastructure.Handlers
                 Quantity = request.Quantity
             };
 
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _repository.AddProduct(product);
 
-            return new()
+            return new CreateProduct.Response
             {
-                Id = product.Id,
+                Id = product.Id
             };
         }
     }

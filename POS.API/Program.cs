@@ -40,24 +40,13 @@ namespace POS.API
             });
 
 
-            builder.Services.AddDbContext<PosDBContext>((serviceProvider, dbContextOptionsBuilder) =>
+            builder.Services.AddDbContext<PosDBContext>((serviceProvider, options) =>
             {
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-                dbContextOptionsBuilder.UseSqlServer(connectionString, sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(10),
-                        errorNumbersToAdd: null
-                    );
-
-                    sqlOptions.CommandTimeout(30); // Command timeout in seconds
-                });
-
-                dbContextOptionsBuilder.EnableDetailedErrors(true);
-                dbContextOptionsBuilder.EnableSensitiveDataLogging(true);
+                options.UseSqlServer(connectionString);
             });
+
+
 
 
             builder.Services.AddScoped<IProductRepository,  ProductRepository>();

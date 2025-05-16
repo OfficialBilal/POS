@@ -1,24 +1,22 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using POS.Application.Queries;
+using POS.Application.Repositories;
 using POS.Domain.Entities;
-using POS.Infrastructure.Data;
 
 namespace POS.Infrastructure.Handlers
 {
     public class GetAccountByUsernameHandler : IRequestHandler<GetAccountByUsername.Request, GetAccountByUsername.Response>
     {
-        private readonly PosDBContext _context;
+        private readonly IAccountRepository _repository;
 
-        public GetAccountByUsernameHandler(PosDBContext context)
+        public GetAccountByUsernameHandler(IAccountRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<GetAccountByUsername.Response?> Handle(GetAccountByUsername.Request request, CancellationToken cancellationToken)
         {
-            var u = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.Username == request.Username, cancellationToken);
+            var u = await _repository.GetAccountByUsername(request.Username);
             
             return new()
             {
